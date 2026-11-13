@@ -114,8 +114,10 @@ body{
 .santa .bob img{
   display:block;width:100%;height:auto;
   transform:scaleX(-1);
+  transition:transform .55s cubic-bezier(.45,0,.55,1);
   filter:drop-shadow(0 16px 28px rgba(0,0,0,.45));
 }
+.santa.turn .bob img{transform:scaleX(1)}
 .santa .glow{
   position:absolute;left:48%;top:58%;width:76%;height:64%;transform:translate(-50%,-50%);
   background:radial-gradient(ellipse at 50% 50%,rgba(255,198,120,.38),rgba(255,170,80,0) 70%);
@@ -235,6 +237,12 @@ body{
 .apple.clickable:hover{filter:brightness(1.1)}
 .apple:focus-visible{outline:2px solid rgba(255,214,150,.9);outline-offset:8px;border-radius:50%}
 .apple img{display:block;width:100%;height:auto;filter:drop-shadow(0 12px 26px rgba(80,10,10,.55)) drop-shadow(0 0 28px rgba(255,190,110,.42))}
+.apple .sticker{
+  position:absolute;left:50%;top:46%;width:37%;
+  transform:translate(-50%,-50%) rotate(-11deg);
+  filter:drop-shadow(0 2px 5px rgba(60,10,10,.45));
+  pointer-events:none;
+}
 .apple .halo{top:52%;width:240%;opacity:.78}
 .apple .halo::after{
   content:'';position:absolute;inset:0;
@@ -271,6 +279,7 @@ body{
 }
 .hint.show{opacity:1;transform:translate(-50%,-50%) translateY(0)}
 .hint.top{--hint-top:34%}
+.hint.apple{--hint-top:44%}
 .hint::before{
   content:'';position:absolute;left:50%;top:50%;width:136%;height:210%;
   transform:translate(-50%,-50%);
@@ -490,6 +499,7 @@ body{
     --apple-hero:59%;
   }
   .hint.top{--hint-top:33%}
+  .hint.apple{--hint-top:44%}
   .santa{width:min(80vw,470px)}
   .masthead{top:8%}
   .hint .cn{display:none}
@@ -554,6 +564,7 @@ body{
   <button class="apple" id="apple" type="button" aria-label="盒子里的苹果">
     <span class="halo" aria-hidden="true"></span>
     <img src="assets/apple.webp" alt="一颗被祝福过的红苹果">
+    <img class="sticker" src="assets/sticker.webp" alt="">
   </button>
 
   <button class="envelope" id="envelope" type="button" aria-label="盒子底部的信">
@@ -571,7 +582,7 @@ body{
     <button class="replay" id="replay" type="button">Watch it again · 再看一次</button>
   </div>
 
-  <button class="sound" id="sound" type="button" aria-pressed="false" aria-label="声音开关" title="声音开关">
+  <button class="sound" id="sound" type="button" aria-pressed="false" aria-label="背景音乐开关" title="背景音乐开关">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <path d="M4 9.5v5h3.2L12 18.4V5.6L7.2 9.5H4z"/>
       <path d="M16 9.2a4 4 0 0 1 0 5.6"/>
@@ -779,8 +790,20 @@ body{
   /* ================= 声音 ================= */
   var Snd = (function () {
     var ctx = null, master = null, on = false, timer = null, phraseEnd = 0;
-    var SEQ = [523.25, 587.33, 659.25, 783.99, 659.25, 587.33, 523.25, 493.88,
-      523.25, 659.25, 783.99, 880, 783.99, 659.25, 587.33, 523.25];
+    /* ---------- Jingle Bells（C 大调 4/4，每拍 0.55s，循环） ---------- */
+    var NOTE = { C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392.00,
+      A4: 440.00, B4: 493.88, C5: 523.25, D5: 587.33, E5: 659.25, F5: 698.46, G5: 783.99 };
+    var BEAT = 0.55;
+    var SONG = [
+      ['E4', 1], ['E4', 1], ['E4', 2],
+      ['E4', 1], ['E4', 1], ['E4', 2],
+      ['E4', 1], ['G4', 1], ['C5', 1], ['D5', 1],
+      ['E5', 4],
+      ['F5', 1], ['F5', 1], ['F5', 2],
+      ['E5', 1], ['E5', 1], ['E5', 1], ['E5', 1],
+      ['D5', 1], ['D5', 1], ['E5', 1], ['D5', 1],
+      ['G5', 2], ['G5', 2]
+    ];
 
     function ensure() {
       if (!ctx) {
@@ -813,12 +836,16 @@ body{
     }
     function phrase() {
       if (!on || !ctx) return;
-      var t0 = Math.max(ctx.currentTime + 0.05, phraseEnd + 1.4);
-      for (var i = 0; i < SEQ.length; i++) {
-        bell(SEQ[i], t0 + i * 0.62, 1.9, i % 4 === 0 ? 0.55 : 0.34);
+      var t0 = Math.max(ctx.currentTime + 0.06, phraseEnd + 0.9);
+      var acc = 0, bar = 0;
+      for (var i = 0; i < SONG.length; i++) {
+        var beats = SONG[i][1];
+        bell(NOTE[SONG[i][0]], t0 + acc * BEAT, Math.max(0.42, beats * BEAT * 1.15), bar === 0 ? 0.56 : 0.4);
+        acc += beats;
+        bar = (bar + beats) % 4;
       }
-      phraseEnd = t0 + SEQ.length * 0.62;
-      timer = setTimeout(phrase, (phraseEnd - ctx.currentTime - 0.3) * 1000);
+      phraseEnd = t0 + acc * BEAT;
+      timer = setTimeout(phrase, (phraseEnd - ctx.currentTime) * 1000 + 40);
     }
     return {
       enable: function (silent) {
@@ -853,8 +880,8 @@ body{
     };
   })();
 
-  var savedSound = 'off';
-  try { savedSound = localStorage.getItem('xmas-sound') || 'off'; } catch (e) { }
+  var savedSound = 'on';
+  try { savedSound = localStorage.getItem('xmas-sound') || 'on'; } catch (e) { }
   function paintSound() {
     soundBtn.setAttribute('aria-pressed', Snd.isOn() ? 'true' : 'false');
   }
@@ -870,7 +897,9 @@ body{
     paintSound();
   });
   if (savedSound === 'on' && !reduce) {
-    var kick = function () {
+    var kick = function (e) {
+      var t = e && e.target;
+      if (t && t.closest && t.closest('#sound')) return;
       if (!Snd.isOn() && Snd.enable()) paintSound();
       window.removeEventListener('pointerdown', kick);
       window.removeEventListener('keydown', kick);
@@ -975,54 +1004,47 @@ body{
     ], { duration: duration || 1500, easing: 'cubic-bezier(.22,1,.36,1)' });
   }
 
+  var SANTA_AT = 'translate(-50%,-50%) translateX(0) translateY(0) scale(1) rotate(0deg)';
+
   async function arrive() {
     if (reduce) {
-      santa.style.transform = 'translate(-50%,-50%) translateX(-46vw)';
-      santa.style.opacity = '0.75';
+      santa.style.transform = 'translate(-50%,-50%) translateX(-16vw) scale(.66)';
+      santa.style.opacity = '0.9';
       return;
     }
+    santa.style.opacity = '1';
     await anim(santa, [
-      { transform: 'translate(-50%,-50%) translateX(-132vw) translateY(-5vh) rotate(-2deg)' },
-      { offset: 0.34, transform: 'translate(-50%,-50%) translateX(-52vw) translateY(-11vh) rotate(1.2deg)' },
-      { offset: 0.7, transform: 'translate(-50%,-50%) translateX(-7vw) translateY(-3vh) rotate(-1deg)' },
-      { transform: 'translate(-50%,-50%) translateX(0) translateY(0) rotate(0deg)' }
-    ], { duration: 4200, easing: 'cubic-bezier(.14,.82,.3,1)' });
+      { transform: 'translate(-50%,-50%) translateX(-76vw) translateY(13vh) scale(.2) rotate(-4deg)' },
+      { offset: 0.18, transform: 'translate(-50%,-50%) translateX(-48vw) translateY(3vh) scale(.32) rotate(-1deg)' },
+      { offset: 0.5, transform: 'translate(-50%,-50%) translateX(-6vw) translateY(-5vh) scale(.52) rotate(1.4deg)' },
+      { offset: 0.78, transform: 'translate(-50%,-50%) translateX(20vw) translateY(-3vh) scale(.76) rotate(-1.2deg)' },
+      { transform: SANTA_AT }
+    ], { duration: 5000, easing: 'cubic-bezier(.4,.02,.4,1)' });
+  }
+
+  function depart() {
+    if (reduce) { santa.style.opacity = '0'; return; }
+    window.setTimeout(function () { santa.classList.add('turn'); }, 120);
+    anim(santa, [
+      { transform: SANTA_AT },
+      { offset: 0.24, transform: 'translate(-50%,-50%) translateX(18vw) translateY(-5vh) scale(.78) rotate(1.2deg)' },
+      { offset: 0.58, transform: 'translate(-50%,-50%) translateX(-8vw) translateY(-6vh) scale(.54) rotate(-1.4deg)' },
+      { offset: 0.86, transform: 'translate(-50%,-50%) translateX(-44vw) translateY(2vh) scale(.34) rotate(1deg)' },
+      { transform: 'translate(-50%,-50%) translateX(-78vw) translateY(13vh) scale(.2) rotate(3deg)' }
+    ], { duration: 4200, easing: 'cubic-bezier(.36,.02,.4,1)' });
   }
 
   async function start() {
-    await wait(600);
+    await wait(560);
     await arrive();
-    await wait(320);
+    await wait(300);
     await dropGift(1500);
     step = 1;
     gift.classList.add('clickable');
     pulse(true);
     showHint('Tap the gift to take it', '轻轻点一下，收下它');
-  }
-
-  async function receive() {
-    step = 2;
-    gift.classList.remove('clickable');
-    pulse(false);
-    hideHint();
-    masthead.classList.add('hide');
-    Snd.chime();
-    nudgeGift();
-    anim(santa, [
-      { transform: 'translate(-50%,-50%) translateX(0) translateY(0) rotate(0deg)' },
-      { offset: 0.16, transform: 'translate(-50%,-50%) translateX(7vw) translateY(-4vh) rotate(1.4deg)' },
-      { offset: 0.5, transform: 'translate(-50%,-50%) translateX(48vw) translateY(-16vh) rotate(-1deg)' },
-      { transform: 'translate(-50%,-50%) translateX(140vw) translateY(-26vh) rotate(-2.5deg)' }
-    ], { duration: 2700, easing: 'cubic-bezier(.5,.05,.72,.45)' });
-
-    await wait(1450);
-    showHint('Now tap again to open it', '再点一下，打开它');
-    await wait(260);
-    if (step === 2) {
-      gift.classList.add('clickable');
-      pulse(true);
-      step = 3;
-    }
+    await wait(1050);
+    depart();
   }
 
   var appleHeroY = 0, appleStartY = 0;
@@ -1031,10 +1053,75 @@ body{
     appleHeroY = (cssPct('--apple-hero') - cssPct('--box-top')) / 100 * h;
     appleStartY = appleHeroY + (cssPct('--apple-start') - cssPct('--apple-hero')) / 100 * h;
   }
+  async function showBox(nextStep, en, cn) {
+    gift.classList.remove('open');
+    gift.style.pointerEvents = '';
+    if (reduce) {
+      gift.style.opacity = '1';
+      gift.style.transform = 'translate(-50%,-50%) scale(1)';
+    } else {
+      gift.style.opacity = '0';
+      await anim(gift, [
+        { opacity: 0, transform: 'translate(-50%,-50%) scale(.84)' },
+        { offset: 0.56, opacity: 1, transform: 'translate(-50%,-50%) scale(1.05)' },
+        { opacity: 1, transform: 'translate(-50%,-50%) scale(1)' }
+      ], { duration: 1250, easing: 'cubic-bezier(.22,1,.36,1)' });
+    }
+    pulse(true);
+    step = nextStep;
+    gift.classList.add('clickable');
+    showHint(en, cn);
+  }
+
+  async function openBox() {
+    step = 4;
+    gift.classList.remove('clickable');
+    pulse(false);
+    hideHint();
+    masthead.classList.add('hide');
+    dim.classList.add('on');
+    if (!reduce) Snd.chime();
+    if (!reduce) {
+      anim(gift, [
+        { transform: 'translate(-50%,-50%) scale(1)' },
+        { offset: 0.35, transform: 'translate(-50%,-50%) scale(1.16) rotate(-2deg)' },
+        { transform: 'translate(-50%,-50%) scale(1) rotate(0deg)' }
+      ], { duration: 900, easing: 'cubic-bezier(.22,1,.36,1)' });
+    }
+    await wait(150);
+    gift.classList.add('open');
+    var rect = gift.getBoundingClientRect();
+    burst(30, rect.left + rect.width / 2, rect.top + rect.height * 0.4);
+    await wait(600);
+    spawnFlies();
+    if (!reduce) Snd.tick();
+    await wait(reduce ? 3600 : 7300);
+    clearFlies();
+    await wait(460);
+    await showBox(3, 'Tap it again', '再点一下，打开它');
+  }
+
   async function showApple() {
+    step = 4;
+    gift.classList.remove('clickable');
+    pulse(false);
+    hideHint();
+    if (!reduce) {
+      anim(gift, [
+        { transform: 'translate(-50%,-50%) scale(1)' },
+        { offset: 0.4, transform: 'translate(-50%,-50%) scale(1.1) rotate(-2deg)' },
+        { transform: 'translate(-50%,-50%) scale(1) rotate(0deg)' }
+      ], { duration: 820, easing: 'cubic-bezier(.22,1,.36,1)' });
+    }
+    await wait(130);
+    gift.classList.add('open');
+    var rect = gift.getBoundingClientRect();
+    burst(18, rect.left + rect.width / 2, rect.top + rect.height * 0.36);
+    await wait(260);
     measureApple();
-    Snd.chime();
+    if (!reduce) Snd.chime();
     appleEl.style.opacity = '1';
+    appleEl.style.pointerEvents = '';
     if (reduce) {
       appleEl.style.transform = 'translate(-50%,-50%) translateY(' + appleHeroY + 'px) scale(1)';
     } else {
@@ -1044,56 +1131,44 @@ body{
         { opacity: 1, transform: 'translate(-50%,-50%) translateY(' + appleHeroY.toFixed(0) + 'px) scale(1)' }
       ], { duration: 1700, easing: 'cubic-bezier(.22,1,.36,1)' });
     }
+    hint.classList.add('apple');
     step = 5;
     appleEl.classList.add('clickable');
     showHint('Tap the apple to keep it', '点一下苹果，收下它');
   }
 
-  async function openBox() {
+  async function takeApple() {
     step = 4;
+    appleEl.classList.remove('clickable');
+    hideHint();
+    hint.classList.remove('apple');
+    if (!reduce) Snd.chime();
+    if (!reduce) {
+      var r0 = appleEl.getBoundingClientRect();
+      burst(18, r0.left + r0.width / 2, r0.top + r0.height / 2);
+      await anim(appleEl, [
+        { opacity: 1, transform: 'translate(-50%,-50%) translateY(' + appleHeroY.toFixed(0) + 'px) scale(1)' },
+        { offset: 0.35, opacity: 1, transform: 'translate(-50%,-50%) translateY(' + appleHeroY.toFixed(0) + 'px) scale(1.16)' },
+        { opacity: 0, transform: 'translate(-50%,-50%) translateY(' + (appleHeroY - 52).toFixed(0) + 'px) scale(.74)' }
+      ], { duration: 1200, easing: 'cubic-bezier(.4,0,.5,1)' });
+    }
+    appleEl.style.opacity = '0';
+    appleEl.style.pointerEvents = 'none';
+    await wait(120);
+    await showBox(6, 'Tap the box once more', '再点一次盒子');
+  }
+
+  async function revealLetter() {
+    step = 8;
     gift.classList.remove('clickable');
     pulse(false);
     hideHint();
-    dim.classList.add('on');
-    if (!reduce) {
-      anim(gift, [
-        { transform: 'translate(-50%,-50%) scale(1)' },
-        { offset: 0.35, transform: 'translate(-50%,-50%) scale(1.15) rotate(-2deg)' },
-        { transform: 'translate(-50%,-50%) scale(1) rotate(0deg)' }
-      ], { duration: 900, easing: 'cubic-bezier(.22,1,.36,1)' });
-    }
-    await wait(140);
-    gift.classList.add('open');
-    var rect = gift.getBoundingClientRect();
-    burst(28, rect.left + rect.width / 2, rect.top + rect.height * 0.42);
     if (!reduce) Snd.chime();
-    await wait(620);
-    spawnFlies();
-    if (!reduce) Snd.tick();
-    await wait(reduce ? 3600 : 7300);
-    clearFlies();
-    await wait(450);
-    await showApple();
-  }
-
-  async function takeApple() {
-    step = 6;
-    appleEl.classList.remove('clickable');
-    hideHint();
-    Snd.chime();
-    if (!reduce) {
-      await anim(appleEl, [
-        { transform: 'translate(-50%,-50%) translateY(' + appleHeroY.toFixed(0) + 'px) scale(1)' },
-        { offset: 0.34, transform: 'translate(-50%,-50%) translateY(' + appleHeroY.toFixed(0) + 'px) scale(1.17)' },
-        { transform: 'translate(-50%,-50%) translateY(' + appleHeroY.toFixed(0) + 'px) scale(1.03)' }
-      ], { duration: 1000, easing: 'cubic-bezier(.22,1,.36,1)' });
-      var r = appleEl.getBoundingClientRect();
-      burst(16, r.left + r.width / 2, r.top + r.height / 2);
-    }
-    anim(gift, [{ opacity: 1 }, { opacity: 0.5 }], { duration: 900, easing: 'ease' });
     gift.style.pointerEvents = 'none';
+    anim(gift, [{ opacity: 1 }, { opacity: 0.5 }], { duration: 900, easing: 'ease' });
 
     envEl.style.opacity = '1';
+    envEl.style.pointerEvents = '';
     if (reduce) {
       envEl.style.transform = 'translate(-50%,-50%) rotate(-3deg) scale(1)';
     } else {
@@ -1104,9 +1179,9 @@ body{
       ], { duration: 1500, easing: 'cubic-bezier(.22,1,.36,1)' });
     }
     envEl.classList.add('clickable');
-    step = 7;
     hint.classList.add('top');
     showHint('Tap the letter', '点开这封信');
+    step = 7;
   }
 
   /* ================= 信 ================= */
@@ -1186,8 +1261,9 @@ body{
 
   /* ================= 点击链 ================= */
   gift.addEventListener('click', function () {
-    if (step === 1) { receive(); }
-    else if (step === 3) { openBox(); }
+    if (step === 1) { openBox(); }
+    else if (step === 3) { showApple(); }
+    else if (step === 6) { revealLetter(); }
   });
   appleEl.addEventListener('click', function () {
     if (step === 5) { takeApple(); }
@@ -1219,6 +1295,7 @@ body{
     subEn.textContent = subEnDefault;
     subCn.textContent = subCnDefault;
     santa.removeAttribute('style');
+    santa.classList.remove('turn');
     pulse(false);
     stage.style.opacity = '1';
     await wait(380);
