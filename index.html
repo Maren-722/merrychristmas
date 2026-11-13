@@ -18,11 +18,14 @@
   --ink:#081020;
   --paper-ink:#4a3623;
   --santa-top:35%;
-  --box-top:72%;
-  --envelope-top:79%;
-  --hint-top:53.5%;
-  --apple-start:66%;
-  --apple-hero:59%;
+  --box-top:54%;
+  --envelope-top:73%;
+  --hint-top:74%;
+  --apple-start:59%;
+  --apple-hero:42%;
+  --apple-x:-11vw;
+  --envelope-x:-12vw;
+  --box-shift-x:10vw;
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;height:100%}
@@ -143,20 +146,24 @@ body{
 .gift-btn.clickable{cursor:pointer}
 .gift-btn.clickable:hover{filter:brightness(1.12)}
 .gift-btn:focus-visible{outline:2px solid rgba(255,214,150,.9);outline-offset:10px;border-radius:14px}
-.gift-stack{position:relative;width:100%}
-.gift-stack img{display:block;width:100%;height:auto;transition:opacity .55s ease,transform .55s ease}
+.gift-stack{position:relative;width:100%;transition:transform 1.35s cubic-bezier(.45,.05,.25,1)}
+.gift-stack img{display:block;width:100%;height:auto;transition:opacity 1.15s cubic-bezier(.4,.05,.3,1),transform 1.15s cubic-bezier(.4,.05,.3,1)}
 .gift-stack .opened{position:absolute;inset:0;opacity:0;transform:scale(1.04)}
-.gift-btn.open .closed{opacity:0}
+.gift-btn.open .closed{opacity:0;transform:scale(.96)}
 .gift-btn.open .opened{opacity:1;transform:none}
+.gift-btn.open .gift-stack{transform:scale(.9)}
+.gift-btn.open.shift .gift-stack{transform:translate(var(--box-shift-x),0) scale(.9)}
 .halo{
   position:absolute;left:50%;top:56%;width:180%;aspect-ratio:1;
   transform:translate(-50%,-50%);
   background:radial-gradient(circle,rgba(255,205,128,.45),rgba(255,170,80,.16) 44%,rgba(255,160,70,0) 70%);
   filter:blur(7px);opacity:.5;pointer-events:none;z-index:-1;
+  transition:transform 1.35s cubic-bezier(.45,.05,.25,1);
   animation:pulseGlow 3.8s ease-in-out infinite;
 }
 @keyframes pulseGlow{0%,100%{opacity:.42;transform:translate(-50%,-50%) scale(1)}50%{opacity:.86;transform:translate(-50%,-50%) scale(1.1)}}
 .gift-btn.open .halo{opacity:1;animation-duration:2.4s}
+.gift-btn.open.shift .halo{transform:translate(calc(-50% + var(--box-shift-x)),-50%)}
 .gift-btn::before{
   content:'';position:absolute;left:50%;bottom:-13%;width:126%;height:24%;
   transform:translateX(-50%);
@@ -200,11 +207,21 @@ body{
 }
 .fly .dot{
   display:block;width:5px;height:5px;border-radius:50%;
-  margin:0 auto 6px;
+  margin:0 auto 6px;padding:0;border:0;
+  position:relative;
   background:#fff6d8;
   box-shadow:0 0 10px 3px rgba(255,205,120,.8),0 0 26px 10px rgba(255,175,80,.32);
   animation:blink 2.4s ease-in-out infinite;
+  pointer-events:auto;cursor:pointer;appearance:none;
+  transition:box-shadow .25s ease,background .25s ease;
 }
+.fly .dot::after{
+  content:'';position:absolute;left:50%;top:50%;
+  width:28px;height:28px;transform:translate(-50%,-50%);
+  border-radius:50%;
+}
+.fly .dot:hover{background:#fffdf3;box-shadow:0 0 14px 5px rgba(255,213,140,.95),0 0 34px 14px rgba(255,180,85,.45)}
+.fly .dot:focus-visible{outline:2px solid rgba(255,222,160,.9);outline-offset:4px}
 .fly .word{
   display:block;white-space:nowrap;
   font-family:'Cormorant Garamond',Georgia,serif;
@@ -227,7 +244,7 @@ body{
 
 /* ---------- 苹果 ---------- */
 .apple{
-  position:absolute;left:50%;top:var(--box-top);
+  position:absolute;left:calc(50% + var(--apple-x));top:var(--box-top);
   width:clamp(100px,18vmin,186px);
   transform:translate(-50%,-50%) translateY(10px) scale(.6);
   opacity:0;z-index:16;pointer-events:none;background:none;border:0;padding:0;
@@ -237,12 +254,6 @@ body{
 .apple.clickable:hover{filter:brightness(1.1)}
 .apple:focus-visible{outline:2px solid rgba(255,214,150,.9);outline-offset:8px;border-radius:50%}
 .apple img{display:block;width:100%;height:auto;filter:drop-shadow(0 12px 26px rgba(80,10,10,.55)) drop-shadow(0 0 28px rgba(255,190,110,.42))}
-.apple .sticker{
-  position:absolute;left:50%;top:46%;width:37%;
-  transform:translate(-50%,-50%) rotate(-11deg);
-  filter:drop-shadow(0 2px 5px rgba(60,10,10,.45));
-  pointer-events:none;
-}
 .apple .halo{top:52%;width:240%;opacity:.78}
 .apple .halo::after{
   content:'';position:absolute;inset:0;
@@ -252,7 +263,7 @@ body{
 
 /* ---------- 信封 ---------- */
 .envelope{
-  position:absolute;left:50%;top:var(--envelope-top);
+  position:absolute;left:calc(50% + var(--envelope-x));top:var(--envelope-top);
   width:clamp(150px,26vmin,268px);
   transform:translate(-50%,-50%) translateY(64px) rotate(-5deg) scale(.9);
   opacity:0;z-index:15;background:none;border:0;padding:0;
@@ -279,7 +290,7 @@ body{
 }
 .hint.show{opacity:1;transform:translate(-50%,-50%) translateY(0)}
 .hint.top{--hint-top:34%}
-.hint.apple{--hint-top:44%}
+.hint.apple{--hint-top:28%}
 .hint::before{
   content:'';position:absolute;left:50%;top:50%;width:136%;height:210%;
   transform:translate(-50%,-50%);
@@ -492,14 +503,17 @@ body{
 @media (max-aspect-ratio: 1/1){
   :root{
     --santa-top:35%;
-    --box-top:72%;
-    --envelope-top:79%;
-    --hint-top:48%;
-    --apple-start:66%;
-    --apple-hero:59%;
+    --box-top:52%;
+    --envelope-top:72%;
+    --hint-top:68%;
+    --apple-start:56%;
+    --apple-hero:35%;
+    --apple-x:-6vw;
+    --envelope-x:0vw;
+    --box-shift-x:10vw;
   }
   .hint.top{--hint-top:33%}
-  .hint.apple{--hint-top:44%}
+  .hint.apple{--hint-top:25%}
   .santa{width:min(80vw,470px)}
   .masthead{top:8%}
   .hint .cn{display:none}
@@ -514,7 +528,7 @@ body{
 }
 @media (prefers-reduced-motion: reduce){
   .santa .bob,.halo,.fly .dot,.film,.bokeh i{animation:none !important}
-  .gift-btn,.apple,.envelope,.hint,.masthead,.letter-modal,.finale{transition-duration:.01ms}
+  .gift-btn,.gift-stack,.gift-stack img,.halo,.apple,.envelope,.hint,.masthead,.letter-modal,.finale{transition-duration:.01ms}
 }
 
 /* ---------- 收尾修补 ---------- */
@@ -564,7 +578,6 @@ body{
   <button class="apple" id="apple" type="button" aria-label="盒子里的苹果">
     <span class="halo" aria-hidden="true"></span>
     <img src="assets/apple.webp" alt="一颗被祝福过的红苹果">
-    <img class="sticker" src="assets/sticker.webp" alt="">
   </button>
 
   <button class="envelope" id="envelope" type="button" aria-label="盒子底部的信">
@@ -876,6 +889,14 @@ body{
         if (!on || !ctx) return;
         bell(880, ctx.currentTime + 0.02, 0.7, 0.22);
       },
+      plink: function (k) {
+        if (!on || !ctx) return;
+        var TONE = [1318.5, 1568.0, 1760.0, 2093.0, 2349.0];
+        var t = ctx.currentTime + 0.008;
+        var f = TONE[Math.abs(k || 0) % TONE.length];
+        bell(f, t, 0.3, 0.34);
+        bell(f * 1.62, t + 0.035, 0.2, 0.13);
+      },
       isOn: function () { return on; }
     };
   })();
@@ -885,6 +906,7 @@ body{
   function paintSound() {
     soundBtn.setAttribute('aria-pressed', Snd.isOn() ? 'true' : 'false');
   }
+  var kick = null;
   soundBtn.addEventListener('click', function () {
     if (Snd.isOn()) {
       Snd.disable();
@@ -894,10 +916,15 @@ body{
         try { localStorage.setItem('xmas-sound', 'on'); } catch (e) { }
       }
     }
+    if (kick) {
+      window.removeEventListener('pointerdown', kick);
+      window.removeEventListener('keydown', kick);
+      kick = null;
+    }
     paintSound();
   });
   if (savedSound === 'on' && !reduce) {
-    var kick = function (e) {
+    kick = function (e) {
       var t = e && e.target;
       if (t && t.closest && t.closest('#sound')) return;
       if (!Snd.isOn() && Snd.enable()) paintSound();
@@ -960,7 +987,22 @@ body{
       el.style.setProperty('--y2', (y * 1.12 - 20).toFixed(0) + 'px');
       el.style.setProperty('--dur', (6.2 + Math.random() * 1.4).toFixed(2) + 's');
       el.style.setProperty('--delay', (Math.random() * 0.85).toFixed(2) + 's');
-      el.innerHTML = '<span class="dot"></span><span class="word">' + WORDS[i] + '</span>';
+      var dot = document.createElement('button');
+      dot.type = 'button';
+      dot.className = 'dot';
+      dot.dataset.tone = i % 5;
+      dot.setAttribute('aria-label', WORDS[i]);
+      dot.addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        Snd.plink(parseInt(this.dataset.tone, 10) || 0);
+        var r = this.getBoundingClientRect();
+        burst(7, r.left + r.width / 2, r.top + r.height / 2);
+      });
+      var wEl = document.createElement('span');
+      wEl.className = 'word';
+      wEl.textContent = WORDS[i];
+      el.appendChild(dot);
+      el.appendChild(wEl);
       flies.appendChild(el);
 
         if (reduce) {
@@ -1047,14 +1089,21 @@ body{
     depart();
   }
 
-  var appleHeroY = 0, appleStartY = 0;
+  var appleHeroY = 0, appleStartY = 0, appleStartX = 0;
+  function cssNum(name) {
+    var v = getComputedStyle(document.documentElement).getPropertyValue(name);
+    var n = parseFloat(v);
+    return isNaN(n) ? 0 : n;
+  }
   function measureApple() {
-    var h = stage.clientHeight;
+    var h = stage.clientHeight, w = stage.clientWidth;
     appleHeroY = (cssPct('--apple-hero') - cssPct('--box-top')) / 100 * h;
     appleStartY = appleHeroY + (cssPct('--apple-start') - cssPct('--apple-hero')) / 100 * h;
+    appleStartX = (cssNum('--box-shift-x') - cssNum('--apple-x')) / 100 * w;
   }
   async function showBox(nextStep, en, cn) {
     gift.classList.remove('open');
+    gift.classList.remove('shift');
     gift.style.pointerEvents = '';
     if (reduce) {
       gift.style.opacity = '1';
@@ -1065,7 +1114,7 @@ body{
         { opacity: 0, transform: 'translate(-50%,-50%) scale(.84)' },
         { offset: 0.56, opacity: 1, transform: 'translate(-50%,-50%) scale(1.05)' },
         { opacity: 1, transform: 'translate(-50%,-50%) scale(1)' }
-      ], { duration: 1250, easing: 'cubic-bezier(.22,1,.36,1)' });
+      ], { duration: 1500, easing: 'cubic-bezier(.22,1,.36,1)' });
     }
     pulse(true);
     step = nextStep;
@@ -1076,6 +1125,7 @@ body{
   async function openBox() {
     step = 4;
     gift.classList.remove('clickable');
+    gift.classList.remove('shift');
     pulse(false);
     hideHint();
     masthead.classList.add('hide');
@@ -1088,11 +1138,12 @@ body{
         { transform: 'translate(-50%,-50%) scale(1) rotate(0deg)' }
       ], { duration: 900, easing: 'cubic-bezier(.22,1,.36,1)' });
     }
-    await wait(150);
+    await wait(120);
     gift.classList.add('open');
     var rect = gift.getBoundingClientRect();
+    await wait(320);
     burst(30, rect.left + rect.width / 2, rect.top + rect.height * 0.4);
-    await wait(600);
+    await wait(860);
     spawnFlies();
     if (!reduce) Snd.tick();
     await wait(reduce ? 3600 : 7300);
@@ -1115,9 +1166,12 @@ body{
     }
     await wait(130);
     gift.classList.add('open');
+    await wait(280);
+    gift.classList.add('shift');
     var rect = gift.getBoundingClientRect();
-    burst(18, rect.left + rect.width / 2, rect.top + rect.height * 0.36);
-    await wait(260);
+    await wait(240);
+    burst(18, rect.left + rect.width / 2 + cssNum('--box-shift-x') / 100 * stage.clientWidth, rect.top + rect.height * 0.36);
+    await wait(240);
     measureApple();
     if (!reduce) Snd.chime();
     appleEl.style.opacity = '1';
@@ -1126,10 +1180,10 @@ body{
       appleEl.style.transform = 'translate(-50%,-50%) translateY(' + appleHeroY + 'px) scale(1)';
     } else {
       await anim(appleEl, [
-        { opacity: 0, transform: 'translate(-50%,-50%) translateY(' + appleStartY.toFixed(0) + 'px) scale(.42)' },
-        { offset: 0.56, opacity: 1, transform: 'translate(-50%,-50%) translateY(' + (appleStartY * 0.2 + appleHeroY * 0.8).toFixed(0) + 'px) scale(1.14)' },
-        { opacity: 1, transform: 'translate(-50%,-50%) translateY(' + appleHeroY.toFixed(0) + 'px) scale(1)' }
-      ], { duration: 1700, easing: 'cubic-bezier(.22,1,.36,1)' });
+        { opacity: 0, transform: 'translate(-50%,-50%) translate(' + appleStartX.toFixed(0) + 'px,' + appleStartY.toFixed(0) + 'px) scale(.42)' },
+        { offset: 0.56, opacity: 1, transform: 'translate(-50%,-50%) translate(' + (appleStartX * 0.16).toFixed(0) + 'px,' + (appleStartY * 0.2 + appleHeroY * 0.8).toFixed(0) + 'px) scale(1.14)' },
+        { opacity: 1, transform: 'translate(-50%,-50%) translate(0px,' + appleHeroY.toFixed(0) + 'px) scale(1)' }
+      ], { duration: 1900, easing: 'cubic-bezier(.22,1,.36,1)' });
     }
     hint.classList.add('apple');
     step = 5;
@@ -1147,9 +1201,9 @@ body{
       var r0 = appleEl.getBoundingClientRect();
       burst(18, r0.left + r0.width / 2, r0.top + r0.height / 2);
       await anim(appleEl, [
-        { opacity: 1, transform: 'translate(-50%,-50%) translateY(' + appleHeroY.toFixed(0) + 'px) scale(1)' },
-        { offset: 0.35, opacity: 1, transform: 'translate(-50%,-50%) translateY(' + appleHeroY.toFixed(0) + 'px) scale(1.16)' },
-        { opacity: 0, transform: 'translate(-50%,-50%) translateY(' + (appleHeroY - 52).toFixed(0) + 'px) scale(.74)' }
+        { opacity: 1, transform: 'translate(-50%,-50%) translate(0px,' + appleHeroY.toFixed(0) + 'px) scale(1)' },
+        { offset: 0.35, opacity: 1, transform: 'translate(-50%,-50%) translate(0px,' + appleHeroY.toFixed(0) + 'px) scale(1.16)' },
+        { opacity: 0, transform: 'translate(-50%,-50%) translate(0px,' + (appleHeroY - 52).toFixed(0) + 'px) scale(.74)' }
       ], { duration: 1200, easing: 'cubic-bezier(.4,0,.5,1)' });
     }
     appleEl.style.opacity = '0';
@@ -1165,7 +1219,9 @@ body{
     hideHint();
     if (!reduce) Snd.chime();
     gift.style.pointerEvents = 'none';
-    anim(gift, [{ opacity: 1 }, { opacity: 0.5 }], { duration: 900, easing: 'ease' });
+    gift.classList.add('open');
+    gift.classList.add('shift');
+    anim(gift, [{ opacity: 1 }, { opacity: 0.5 }], { duration: 1100, easing: 'ease' });
 
     envEl.style.opacity = '1';
     envEl.style.pointerEvents = '';
