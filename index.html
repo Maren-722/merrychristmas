@@ -19,13 +19,15 @@
   --paper-ink:#4a3623;
   --santa-top:35%;
   --box-top:54%;
-  --envelope-top:73%;
+  --open-top:78%;
+  --open-shift-y:24vh;
+  --envelope-top:50%;
   --hint-top:74%;
-  --apple-start:59%;
-  --apple-hero:42%;
-  --apple-x:-11vw;
-  --envelope-x:-12vw;
-  --box-shift-x:10vw;
+  --apple-start:74%;
+  --apple-hero:50%;
+  --apple-x:0vw;
+  --envelope-x:0vw;
+  --flies-top:50%;
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;height:100%}
@@ -146,13 +148,12 @@ body{
 .gift-btn.clickable{cursor:pointer}
 .gift-btn.clickable:hover{filter:brightness(1.12)}
 .gift-btn:focus-visible{outline:2px solid rgba(255,214,150,.9);outline-offset:10px;border-radius:14px}
-.gift-stack{position:relative;width:100%;transition:transform 1.35s cubic-bezier(.45,.05,.25,1)}
+.gift-stack{display:block;position:relative;width:100%;transition:transform 1.35s cubic-bezier(.45,.05,.25,1)}
 .gift-stack img{display:block;width:100%;height:auto;transition:opacity 1.15s cubic-bezier(.4,.05,.3,1),transform 1.15s cubic-bezier(.4,.05,.3,1)}
 .gift-stack .opened{position:absolute;inset:0;opacity:0;transform:scale(1.04)}
 .gift-btn.open .closed{opacity:0;transform:scale(.96)}
 .gift-btn.open .opened{opacity:1;transform:none}
-.gift-btn.open .gift-stack{transform:scale(.9)}
-.gift-btn.open.shift .gift-stack{transform:translate(var(--box-shift-x),0) scale(.9)}
+.gift-btn.open .gift-stack{transform:translateY(var(--open-shift-y)) scale(.9)}
 .halo{
   position:absolute;left:50%;top:56%;width:180%;aspect-ratio:1;
   transform:translate(-50%,-50%);
@@ -162,8 +163,7 @@ body{
   animation:pulseGlow 3.8s ease-in-out infinite;
 }
 @keyframes pulseGlow{0%,100%{opacity:.42;transform:translate(-50%,-50%) scale(1)}50%{opacity:.86;transform:translate(-50%,-50%) scale(1.1)}}
-.gift-btn.open .halo{opacity:1;animation-duration:2.4s}
-.gift-btn.open.shift .halo{transform:translate(calc(-50% + var(--box-shift-x)),-50%)}
+.gift-btn.open .halo{opacity:1;animation-duration:2.4s;transform:translate(-50%,calc(-50% + var(--open-shift-y)))}
 .gift-btn::before{
   content:'';position:absolute;left:50%;bottom:-13%;width:126%;height:24%;
   transform:translateX(-50%);
@@ -197,7 +197,7 @@ body{
   background:radial-gradient(ellipse 64% 54% at 50% 68%,rgba(4,8,16,0) 38%,rgba(3,6,14,.58) 78%,rgba(2,5,12,.82) 100%);
 }
 .dim.on{opacity:1}
-.flies{position:absolute;left:50%;top:calc(var(--box-top) - 7vmin);width:0;height:0;z-index:15;pointer-events:none}
+.flies{position:absolute;left:50%;top:var(--flies-top);width:0;height:0;z-index:15;pointer-events:none}
 .fly{
   position:absolute;left:0;top:0;
   will-change:transform,opacity;
@@ -290,7 +290,7 @@ body{
 }
 .hint.show{opacity:1;transform:translate(-50%,-50%) translateY(0)}
 .hint.top{--hint-top:34%}
-.hint.apple{--hint-top:28%}
+.hint.apple{--hint-top:34%}
 .hint::before{
   content:'';position:absolute;left:50%;top:50%;width:136%;height:210%;
   transform:translate(-50%,-50%);
@@ -504,16 +504,18 @@ body{
   :root{
     --santa-top:35%;
     --box-top:52%;
-    --envelope-top:72%;
+    --open-top:76%;
+    --open-shift-y:24vh;
+    --envelope-top:50%;
     --hint-top:68%;
-    --apple-start:56%;
-    --apple-hero:35%;
-    --apple-x:-6vw;
+    --apple-start:71%;
+    --apple-hero:50%;
+    --apple-x:0vw;
     --envelope-x:0vw;
-    --box-shift-x:10vw;
+    --flies-top:50%;
   }
   .hint.top{--hint-top:33%}
-  .hint.apple{--hint-top:25%}
+  .hint.apple{--hint-top:34%}
   .santa{width:min(80vw,470px)}
   .masthead{top:8%}
   .hint .cn{display:none}
@@ -1089,43 +1091,16 @@ body{
     depart();
   }
 
-  var appleHeroY = 0, appleStartY = 0, appleStartX = 0;
-  function cssNum(name) {
-    var v = getComputedStyle(document.documentElement).getPropertyValue(name);
-    var n = parseFloat(v);
-    return isNaN(n) ? 0 : n;
-  }
+  var appleHeroY = 0, appleStartY = 0;
   function measureApple() {
-    var h = stage.clientHeight, w = stage.clientWidth;
+    var h = stage.clientHeight;
     appleHeroY = (cssPct('--apple-hero') - cssPct('--box-top')) / 100 * h;
     appleStartY = appleHeroY + (cssPct('--apple-start') - cssPct('--apple-hero')) / 100 * h;
-    appleStartX = (cssNum('--box-shift-x') - cssNum('--apple-x')) / 100 * w;
-  }
-  async function showBox(nextStep, en, cn) {
-    gift.classList.remove('open');
-    gift.classList.remove('shift');
-    gift.style.pointerEvents = '';
-    if (reduce) {
-      gift.style.opacity = '1';
-      gift.style.transform = 'translate(-50%,-50%) scale(1)';
-    } else {
-      gift.style.opacity = '0';
-      await anim(gift, [
-        { opacity: 0, transform: 'translate(-50%,-50%) scale(.84)' },
-        { offset: 0.56, opacity: 1, transform: 'translate(-50%,-50%) scale(1.05)' },
-        { opacity: 1, transform: 'translate(-50%,-50%) scale(1)' }
-      ], { duration: 1500, easing: 'cubic-bezier(.22,1,.36,1)' });
-    }
-    pulse(true);
-    step = nextStep;
-    gift.classList.add('clickable');
-    showHint(en, cn);
   }
 
   async function openBox() {
     step = 4;
     gift.classList.remove('clickable');
-    gift.classList.remove('shift');
     pulse(false);
     hideHint();
     masthead.classList.add('hide');
@@ -1140,38 +1115,20 @@ body{
     }
     await wait(120);
     gift.classList.add('open');
-    var rect = gift.getBoundingClientRect();
-    await wait(320);
-    burst(30, rect.left + rect.width / 2, rect.top + rect.height * 0.4);
-    await wait(860);
+    await wait(600);
+    burst(30, stage.clientWidth / 2, stage.clientHeight / 2);
+    await wait(560);
     spawnFlies();
     if (!reduce) Snd.tick();
     await wait(reduce ? 3600 : 7300);
     clearFlies();
-    await wait(460);
-    await showBox(3, 'Tap it again', '再点一下，打开它');
+    await wait(620);
+    await showApple();
   }
 
   async function showApple() {
     step = 4;
-    gift.classList.remove('clickable');
-    pulse(false);
     hideHint();
-    if (!reduce) {
-      anim(gift, [
-        { transform: 'translate(-50%,-50%) scale(1)' },
-        { offset: 0.4, transform: 'translate(-50%,-50%) scale(1.1) rotate(-2deg)' },
-        { transform: 'translate(-50%,-50%) scale(1) rotate(0deg)' }
-      ], { duration: 820, easing: 'cubic-bezier(.22,1,.36,1)' });
-    }
-    await wait(130);
-    gift.classList.add('open');
-    await wait(280);
-    gift.classList.add('shift');
-    var rect = gift.getBoundingClientRect();
-    await wait(240);
-    burst(18, rect.left + rect.width / 2 + cssNum('--box-shift-x') / 100 * stage.clientWidth, rect.top + rect.height * 0.36);
-    await wait(240);
     measureApple();
     if (!reduce) Snd.chime();
     appleEl.style.opacity = '1';
@@ -1179,10 +1136,11 @@ body{
     if (reduce) {
       appleEl.style.transform = 'translate(-50%,-50%) translateY(' + appleHeroY + 'px) scale(1)';
     } else {
+      burst(14, stage.clientWidth / 2, stage.clientHeight / 2 + appleStartY * 0.5);
       await anim(appleEl, [
-        { opacity: 0, transform: 'translate(-50%,-50%) translate(' + appleStartX.toFixed(0) + 'px,' + appleStartY.toFixed(0) + 'px) scale(.42)' },
-        { offset: 0.56, opacity: 1, transform: 'translate(-50%,-50%) translate(' + (appleStartX * 0.16).toFixed(0) + 'px,' + (appleStartY * 0.2 + appleHeroY * 0.8).toFixed(0) + 'px) scale(1.14)' },
-        { opacity: 1, transform: 'translate(-50%,-50%) translate(0px,' + appleHeroY.toFixed(0) + 'px) scale(1)' }
+        { opacity: 0, transform: 'translate(-50%,-50%) translateY(' + appleStartY.toFixed(0) + 'px) scale(.42)' },
+        { offset: 0.56, opacity: 1, transform: 'translate(-50%,-50%) translateY(' + (appleStartY * 0.2 + appleHeroY * 0.8).toFixed(0) + 'px) scale(1.14)' },
+        { opacity: 1, transform: 'translate(-50%,-50%) translateY(' + appleHeroY.toFixed(0) + 'px) scale(1)' }
       ], { duration: 1900, easing: 'cubic-bezier(.22,1,.36,1)' });
     }
     hint.classList.add('apple');
@@ -1201,15 +1159,15 @@ body{
       var r0 = appleEl.getBoundingClientRect();
       burst(18, r0.left + r0.width / 2, r0.top + r0.height / 2);
       await anim(appleEl, [
-        { opacity: 1, transform: 'translate(-50%,-50%) translate(0px,' + appleHeroY.toFixed(0) + 'px) scale(1)' },
-        { offset: 0.35, opacity: 1, transform: 'translate(-50%,-50%) translate(0px,' + appleHeroY.toFixed(0) + 'px) scale(1.16)' },
-        { opacity: 0, transform: 'translate(-50%,-50%) translate(0px,' + (appleHeroY - 52).toFixed(0) + 'px) scale(.74)' }
+        { opacity: 1, transform: 'translate(-50%,-50%) translateY(' + appleHeroY.toFixed(0) + 'px) scale(1)' },
+        { offset: 0.35, opacity: 1, transform: 'translate(-50%,-50%) translateY(' + appleHeroY.toFixed(0) + 'px) scale(1.16)' },
+        { opacity: 0, transform: 'translate(-50%,-50%) translateY(' + (appleHeroY - 52).toFixed(0) + 'px) scale(.74)' }
       ], { duration: 1200, easing: 'cubic-bezier(.4,0,.5,1)' });
     }
     appleEl.style.opacity = '0';
     appleEl.style.pointerEvents = 'none';
-    await wait(120);
-    await showBox(6, 'Tap the box once more', '再点一次盒子');
+    await wait(140);
+    await revealLetter();
   }
 
   async function revealLetter() {
@@ -1219,9 +1177,7 @@ body{
     hideHint();
     if (!reduce) Snd.chime();
     gift.style.pointerEvents = 'none';
-    gift.classList.add('open');
-    gift.classList.add('shift');
-    anim(gift, [{ opacity: 1 }, { opacity: 0.5 }], { duration: 1100, easing: 'ease' });
+    anim(gift, [{ opacity: 1 }, { opacity: 0.42 }], { duration: 1100, easing: 'ease' });
 
     envEl.style.opacity = '1';
     envEl.style.pointerEvents = '';
@@ -1318,8 +1274,6 @@ body{
   /* ================= 点击链 ================= */
   gift.addEventListener('click', function () {
     if (step === 1) { openBox(); }
-    else if (step === 3) { showApple(); }
-    else if (step === 6) { revealLetter(); }
   });
   appleEl.addEventListener('click', function () {
     if (step === 5) { takeApple(); }
