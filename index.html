@@ -341,8 +341,8 @@ body{
 .letter-modal.show{opacity:1;visibility:visible}
 .letter{
   position:relative;
-  width:min(600px,100%);max-height:86dvh;overflow:auto;
-  padding:clamp(26px,5.2%,54px) clamp(20px,4.4%,44px) clamp(26px,4.6%,44px);
+  width:min(600px,100%);max-height:90dvh;overflow:auto;
+  padding:clamp(22px,4.4%,44px) clamp(20px,4.2%,40px) clamp(22px,4.2%,40px);
   background:url(assets/paper.webp) center/cover no-repeat;
   color:var(--paper-ink);
   box-shadow:0 30px 70px rgba(0,0,0,.6),0 0 0 1px rgba(120,80,40,.16),inset 0 0 70px rgba(170,125,70,.2);
@@ -355,7 +355,7 @@ body{
 .letter::-webkit-scrollbar-thumb{background:rgba(120,80,40,.3);border-radius:3px}
 .letter-head{
   display:flex;align-items:center;justify-content:center;gap:12px;
-  margin-bottom:clamp(18px,3.4vh,30px);
+  margin-bottom:clamp(12px,2.4vh,18px);
 }
 .letter-head .line{flex:1;height:1px;background:linear-gradient(to right,rgba(120,80,40,0),rgba(120,80,40,.35),rgba(120,80,40,0))}
 .letter-date{
@@ -363,9 +363,9 @@ body{
   color:rgba(90,62,38,.72);white-space:nowrap;
 }
 .salutation{
-  margin:0 0 1em;
+  margin:0 0 .55em;
   font-family:'Cormorant Garamond',Georgia,serif;
-  font-size:clamp(20px,3.4vmin,25px);
+  font-size:clamp(19px,3.1vmin,23px);
   font-weight:500;line-height:1.6;
 }
 .name-input{
@@ -389,29 +389,29 @@ body{
 .name-input::placeholder{color:rgba(120,85,55,.45);font-style:italic;font-size:.86em}
 .name-input:focus{border-bottom-color:#a4552e}
 .type-tip{
-  display:block;margin:-.4em 0 1.3em;
+  display:block;margin:-.3em 0 .8em;
   font-size:11.5px;letter-spacing:.1em;
   color:rgba(110,78,48,.7);
   transition:opacity .4s ease;
 }
 .type-tip.done{opacity:0}
 .body-en p{
-  margin:0 0 1em;
-  font-size:clamp(15px,1.95vmin,17.5px);
-  line-height:1.82;letter-spacing:.005em;
+  margin:0 0 .8em;
+  font-size:clamp(14.5px,1.9vmin,16.5px);
+  line-height:1.72;letter-spacing:.005em;
   text-align:left;
 }
 .divider{
   display:flex;align-items:center;gap:14px;
-  margin:clamp(22px,3.6vh,34px) 0 clamp(18px,2.8vh,26px);
+  margin:clamp(14px,2.2vh,22px) 0 clamp(12px,1.8vh,18px);
 }
 .divider .line{flex:1;height:1px;background:linear-gradient(to right,rgba(120,80,40,0),rgba(120,80,40,.38),rgba(120,80,40,0))}
 .divider svg{width:16px;height:16px;flex:none;opacity:.62}
 .body-cn p{
   margin:0 0 1em;
   font-family:'Noto Serif SC',serif;font-weight:300;
-  font-size:clamp(13.5px,1.75vmin,15.5px);
-  line-height:2.05;letter-spacing:.02em;
+  font-size:clamp(13px,1.65vmin,14.5px);
+  line-height:1.9;letter-spacing:.02em;
   text-align:left;
 }
 .body-cn p.cnsal{
@@ -419,15 +419,15 @@ body{
   line-height:1.9;margin-bottom:.9em;
 }
 .sign{
-  margin-top:clamp(24px,3.6vh,36px);
+  margin-top:clamp(14px,2.2vh,22px);
   text-align:right;
 }
 .sign .lead{font-style:italic;font-size:clamp(14px,1.8vmin,16px);color:rgba(90,62,38,.85);margin:0}
 .sign .name{
   display:block;margin-top:.18em;
   font-family:'Great Vibes','Snell Roundhand',cursive;
-  font-size:clamp(30px,4.4vmin,40px);
-  line-height:1.45;color:#7c2f1c;padding:.04em 0 .12em;
+  font-size:clamp(26px,3.6vmin,33px);
+  line-height:1.3;color:#7c2f1c;padding:0 0 .06em;
 }
 .sign .cn-lead{
   display:block;margin-top:1.1em;
@@ -519,9 +519,28 @@ body{
   .santa{width:min(80vw,470px)}
   .masthead{top:8%}
   .hint .cn{display:none}
-  .letter-modal{padding:72px 9px 10px}
-  .letter{transform:none;max-height:82dvh}
+  .letter-modal{padding:58px 9px 10px}
+  .letter{transform:none;max-height:90dvh}
   .envelope .lbl{display:none}
+}
+@media (max-height: 790px){
+  .letter .salutation{font-size:17.5px;line-height:1.45;margin-bottom:.4em}
+  .letter .type-tip{font-size:11px;margin:-.2em 0 .6em}
+  .letter-head{margin-bottom:10px}
+  .letter .body-en p{font-size:13.4px;line-height:1.6;margin-bottom:.6em}
+  .letter .body-cn p{font-size:12.4px;line-height:1.76;margin-bottom:.6em;letter-spacing:.01em}
+  .letter .body-cn p.cnsal{font-size:14.6px;line-height:1.7;margin-bottom:.5em}
+  .letter .divider{margin:10px 0}
+  .letter .sign{margin-top:10px}
+  .letter .sign .name{font-size:24px;line-height:1.2}
+}
+@media (max-height: 700px){
+  .letter .body-en p{line-height:1.52}
+  .letter .body-cn p{line-height:1.66}
+  .letter-head{margin-bottom:8px}
+  .letter .divider{margin:8px 0}
+  .letter .sign{margin-top:8px}
+  .letter .sign .name{font-size:22px}
 }
 @media (max-height: 560px) and (orientation: landscape){
   .masthead{top:3%}
@@ -623,10 +642,8 @@ body{
     <small class="type-tip" id="typeTip">写下你的名字，这封信就是你的了</small>
 
     <div class="body-en">
-      <p>Merry Christmas. I hope this little box found you on a night that smells of pine and candle smoke — the kind of night it was made for.</p>
-      <p>I couldn't wrap the things I actually wanted to give you, so I put them in the fireflies instead: luck that arrives quietly, beauty you can look at in the mirror without flinching, studies that finally make sense the night before, health that holds all year, friends who answer when you call, a love that is gentle with you, work that feels like yours, and a family that always keeps a light on.</p>
-      <p>And an apple — because a well-wished apple is supposed to keep you safe until next Christmas. Ours came a little late, is a little sweet, and is entirely yours.</p>
-      <p>Thank you for being the friend who makes an ordinary Tuesday worth remembering. I hope this year is generous with you; and if it isn't, I'll be here with a smaller box and the same wish.</p>
+      <p>Merry Christmas. Thank you for being the friend who makes an ordinary evening worth remembering.</p>
+      <p>May luck arrive quietly, may your studies go gently, may your health hold all year, and may the people you love stay close. May this year be generous with you — and if it isn't, I'll be here with the same wish.</p>
     </div>
 
     <p class="sign">
@@ -644,21 +661,14 @@ body{
 
     <div class="body-cn">
       <p class="cnsal">亲爱的<span class="name-mirror" id="toCn">朋友</span>：</p>
-      <p>圣诞快乐。希望这只小盒子抵达你的时候，窗外正有雪，屋里正有光——这样的夜晚，它才算是送到了。</p>
-      <p>真正想给你的东西没法包起来，所以我把它放进了那些萤火虫里：安静的运气，镜子里不必躲闪的好看，考试前夜突然通透了然的学业，整整一年都不出岔子的健康，随时接得住你的朋友，温柔待你的爱情，像自己的事业，以及永远为你留着一盏灯的家人。</p>
-      <p>还有一颗苹果。据说被好好祝福过的苹果，能护你平安到下个圣诞。我们的这颗来得晚了些，甜了一点，全部归你。</p>
-      <p>谢谢你，是那个把普通星期二过得值得记住的朋友。愿这一年对你慷慨；若它偶尔小气，我还在，带着一只更小的盒子和同样的祝福。</p>
+      <p>圣诞快乐。谢谢你，是那个把普通夜晚过得值得记住的朋友。</p>
+      <p>愿好运悄悄到来，愿学业顺利，愿身体健康，愿你在意的人都留在身边；愿这一年对你慷慨——若它偶尔小气，我还在，带着同样的祝福。还有这颗苹果，给接下来的一整年：平安，温暖，事事顺遂。</p>
     </div>
 
     <p class="sign">
       <span class="lead">永远爱你的</span>
       <span class="name">Maren</span>
     </p>
-
-    <div class="ps">
-      <span>P.S. The fireflies are yours now. Keep them somewhere warm.</span>
-      <span class="cnps">又及：萤火虫归你了，记得放在暖和的地方。</span>
-    </div>
   </article>
 </div>
 
